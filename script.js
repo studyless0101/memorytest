@@ -338,22 +338,37 @@ function handleMusicClick(index) {
     
     const btn = document.querySelector(`[data-index="${index}"]`);
     if (btn) {
-        // 클릭 시 강조 효과
-        btn.style.background = '#28a745';
-        btn.style.transform = 'scale(0.95)';
+        // 현재 클릭한 버튼이 올바른지 확인
+        const currentIndex = playerPattern.length;
+        const isCorrect = index === musicPattern[currentIndex];
+        
+        // 클릭 시 강조 효과 (맞으면 초록색, 틀리면 빨간색)
+        if (isCorrect) {
+            btn.classList.add('correct-click');
+        } else {
+            btn.classList.add('wrong-click');
+        }
+        
         btn.classList.add('active');
         
         // 음악 소리 재생
         playNote(index);
         
         setTimeout(() => {
-            btn.classList.remove('active');
-            btn.style.background = '';
-            btn.style.transform = '';
-        }, 200);
+            btn.classList.remove('active', 'correct-click', 'wrong-click');
+        }, 300);
     }
     
     playerPattern.push(index);
+    
+    // 틀렸다면 즉시 게임 종료
+    const currentIndex = playerPattern.length - 1;
+    if (index !== musicPattern[currentIndex]) {
+        setTimeout(() => {
+            endMusicGame();
+        }, 500);
+        return;
+    }
     
     // 패턴 확인
     if (playerPattern.length === musicPattern.length) {
@@ -362,23 +377,18 @@ function handleMusicClick(index) {
 }
 
 function checkMusicPattern() {
-    const isCorrect = playerPattern.every((value, index) => value === musicPattern[index]);
+    // 모든 패턴이 맞았을 때만 실행됨 (틀린 경우는 이미 handleMusicClick에서 처리됨)
+    gameScores.music += musicLevel * 10;
+    musicLevel++;
+    updateMusicScore();
+    updateMusicLevel();
     
-    if (isCorrect) {
-        gameScores.music += musicLevel * 10;
-        musicLevel++;
-        updateMusicScore();
-        updateMusicLevel();
-        
-        if (musicLevel > 5) {
-            endMusicGame();
-        } else {
-            setTimeout(() => {
-                startMusicGame();
-            }, 1000);
-        }
-    } else {
+    if (musicLevel > 5) {
         endMusicGame();
+    } else {
+        setTimeout(() => {
+            startMusicGame();
+        }, 1000);
     }
 }
 
